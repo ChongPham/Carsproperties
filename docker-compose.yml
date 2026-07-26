@@ -1,0 +1,12 @@
+services:
+  postgres:
+    image: postgres
+    container_name: auction-postgres
+    environment:
+      POSTGRES_PASSWORD: 123456
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql
+volumes:
+  pgdata:
