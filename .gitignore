@@ -1,1 +1,29 @@
-.vscode
+# VS Code
+.vscode/
+
+# .NET build artifacts
+**/bin/
+**/obj/
+**/Debug/
+**/Release/
+
+# User-specific files
+*.user
+*.suo
+*.cache
+*.pdb
+*.dll
+*.exe
+*.log
+
+# NuGet
+*.nupkg
+*.snupkg
+packages/
+
+# Rider / JetBrains
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db

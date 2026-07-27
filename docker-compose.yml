@@ -8,5 +8,28 @@ services:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql
+
+  mongodb:
+    image: mongo
+    container_name: search-mongodb
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=123456
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodata:/data/db
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: search-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: 123456 
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
 volumes:
   pgdata:
+  mongodata:
