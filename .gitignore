@@ -1,20 +1,25 @@
 # VS Code
 .vscode/
 
-# .NET build artifacts
-**/bin/
-**/obj/
-**/Debug/
-**/Release/
-
-# User-specific files
-*.user
+# Visual Studio / .NET tooling
+.vs/
 *.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.rsuser
 *.cache
 *.pdb
 *.dll
 *.exe
 *.log
+
+# .NET build artifacts
+**/bin/
+**/obj/
+**/Debug/
+**/Release/
+**/TestResults/
 
 # NuGet
 *.nupkg
@@ -23,6 +28,13 @@ packages/
 
 # Rider / JetBrains
 .idea/
+
+# Local configuration / secrets
+appsettings.Local.json
+appsettings.*.Local.json
+*.local.json
+.env
+.env.*
 
 # OS files
 .DS_Store

@@ -5,6 +5,7 @@ using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Contracts;
 using MassTransit;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -50,17 +51,18 @@ public class AuctionController : ControllerBase
         return _mapper.Map<AuctionDto>(auction);
     }
 
+    [Authorize]
     [HttpPost]
     public async Task<ActionResult<AuctionDto>> CreateAuction(CreateAuctionDto auctionDto)
     {
         var auction = _mapper.Map<Auction>(auctionDto);
-        auction.Seller = "test";
+        auction.Seller = User.Identity.Name;
         _context.Auctions.Add(auction);
-        
-        var result = await _context.SaveChangesAsync() > 0;
 
         var newAuction = _mapper.Map<AuctionDto>(auction);
         await _publishEndpoint.Publish(_mapper.Map<AuctionCreated>(newAuction));
+        
+        var result = await _context.SaveChangesAsync() > 0;
 
         if (!result)
         {
@@ -70,6 +72,7 @@ public class AuctionController : ControllerBase
         new { id = auction.Id }, newAuction);
     }
 
+    [Authorize]
     [HttpPut("{id}")]
     public async Task<ActionResult> UpdateAuction(Guid id, UpdateAuctionDto auctionDto)
     {
@@ -78,7 +81,11 @@ public class AuctionController : ControllerBase
             .FirstOrDefaultAsync(a => a.Id == id);
         if (auction == null) return NotFound();
 
+        if (auction.Seller != User.Identity.Name) return Forbid();
+
         _mapper.Map(auctionDto, auction);
+
+        await _publishEndpoint.Publish(_mapper.Map<AuctionUpdated>(auction));
 
         var result = await _context.SaveChangesAsync() > 0;
 
@@ -90,11 +97,14 @@ public class AuctionController : ControllerBase
         return Ok();
     }
 
+    [Authorize]
     [HttpDelete("{id}")]
     public async Task<ActionResult> DeleteAuction(Guid id)
     {
         var auction = await _context.Auctions.FirstOrDefaultAsync(a => a.Id == id);
         if (auction == null) return NotFound();
+
+        if (auction.Seller != User.Identity.Name) return Forbid(); 
 
         _context.Auctions.Remove(auction);
         var result = await _context.SaveChangesAsync() > 0;
