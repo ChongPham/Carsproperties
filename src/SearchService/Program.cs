@@ -20,10 +20,10 @@ builder.Services.AddMassTransit(x =>
     x.SetEndpointNameFormatter(new KebabCaseEndpointNameFormatter("search", false));
     x.UsingRabbitMq((context, cfg) =>
     {
-        cfg.Host("localhost", "/" , h => 
+        cfg.Host(builder.Configuration["RabbitMq:Host"], "/", h =>
         {
-            h.Username("admin");
-            h.Password("123456");
+            h.Username(builder.Configuration.GetValue("RabbitMq:Username", "admin")!);
+            h.Password(builder.Configuration.GetValue("RabbitMq:Password", "123456")!);
         });
         cfg.ReceiveEndpoint("search-auction-created", e =>
         {

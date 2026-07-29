@@ -3,11 +3,18 @@ services:
     image: postgres
     container_name: auction-postgres
     environment:
+      POSTGRES_USER: postgres
       POSTGRES_PASSWORD: 123456
+      POSTGRES_DB: auctions
     ports:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgrs"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   mongodb:
     image: mongo
@@ -29,6 +36,68 @@ services:
     ports:
       - "5672:5672"
       - "15672:15672"
+
+  auction-svc:
+    image: trongdeptrai/auction-svc:latest
+    build: 
+      context: .
+      dockerfile: src/AuctionService/Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:80
+      - RabbitMQ__Host=rabbitmq
+      - ConnectionStrings__DefaultConnection=Server=postgres;User Id=postgres;Password=123456;Database=auctions
+      - IdentityServiceUrl=http://identity-svc
+    ports:
+      - 5212:80
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_started
+
+  search-svc:
+    image: trongdeptrai/search-svc:latest
+    build:
+      context: .
+      dockerfile: src/SearchService/Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:80
+      - RabbitMQ__Host=rabbitmq
+      - ConnectionStrings__MongoDbConnection=mongodb://admin:123456@mongodb
+      - AuctionServiceUrl=http://auction-svc
+    ports:
+      - 5092:80
+    depends_on:
+      - mongodb
+      - rabbitmq
+
+  identity-svc:
+    image: trongdeptrai/identity-svc:latest
+    build:
+      context: .
+      dockerfile: src/IdentityService/Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Docker
+      - ASPNETCORE_URLS=http://+:80
+      - ConnectionStrings__DefaultConnection=Server=postgres;User Id=postgres;Password=123456;Database=identity
+    ports:
+      - 5001:80
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  gateway-svc:
+    image: trongdeptrai/gateway-svc:latest
+    build:
+      context: .
+      dockerfile: src/GatewayService/Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Docker
+      - ASPNETCORE_URLS=http://+:80
+    ports:
+      - 5048:80
 
 volumes:
   pgdata:
