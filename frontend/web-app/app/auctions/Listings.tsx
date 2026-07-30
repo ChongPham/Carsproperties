@@ -8,7 +8,7 @@ import { getData } from '../actions/auctionActions';
 import Filters from './Filters';
 import { useParamsStore } from '../../hooks/useParamsStore';
 import { useShallow } from 'zustand/react/shallow';
-import EmptyFilter from '@app/components/EmptyFilter';
+import EmptyFilter from '../components/EmptyFilter';
 import qs from "query-string"
 
 export default function Listings() {
